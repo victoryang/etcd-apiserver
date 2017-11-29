@@ -9,11 +9,6 @@ import (
   "github.com/urfave/negroni"
 )
 
-var ETCD_URL = ":2379"
-var TRAEFIK_PREFIX = "/traefik"
-var ETCDCTL = "etcdctl"
-var CURL = "curl"
-
 func main() {
   r := mux.NewRouter()
   r.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
@@ -21,6 +16,10 @@ func main() {
   })
 
   n := negroni.Classic() // Includes some default middlewares
+
+  // add jwt authentication
+  JWTMiddleware := JWTMiddlewareNew()
+  n.Use(negroni.HandlerFunc(JWTMiddleware.ServeHTTP))
 
   // add recovery middleware 
   n.Use(negroni.NewRecovery())
@@ -33,15 +32,11 @@ func main() {
   fmt.Printf("Web server exits")
 }
 
-func getETCDSserver () {
-  return 
-}
-
 func getBackendServerUrl (w http.ResponseWriter, r *http.Request) {
   vars := mux.Vars(r)
   w.WriteHeader(http.StatusOK)
   fmt.Fprintf(w, "backend " + vars["backendid"] + " server " + vars["serverid"] + " url is:")
-
+  return
 }
 
 func RegisterRequests (r *mux.Router) {
